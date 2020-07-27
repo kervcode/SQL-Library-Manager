@@ -1,12 +1,16 @@
-"use strict";
-
 const Sequelize = require("sequelize");
-const { sequelize } = require(".");
+
+// Defining Book model
 
 module.exports = (sequelize) => {
   class Book extends Sequelize.Model {}
   Book.init(
     {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       title: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -32,10 +36,10 @@ module.exports = (sequelize) => {
         },
       },
       genre: {
-        ype: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       year: {
-        ype: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
     },
     { sequelize }
