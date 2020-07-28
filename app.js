@@ -17,49 +17,99 @@ app.use("/static", express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, "public")));
+
+function asyncHandler(cb) {
+  return async (req, res, next) => {
+    try {
+      await cb(req, res, next);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  };
+}
 //Redirect "/" to "/books"
-app.get("/", (req, res) => {
-  res.redirect("/books");
-});
+app.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    res.redirect("/books");
+  })
+);
 
 //GET books listing
-app.get("/books", async (req, res) => {
-  const books = await Book.findAll();
-  res.render("index", { books });
-});
+app.get(
+  "/books",
+  asyncHandler(async (req, res) => {
+    const books = await Book.findAll();
+    res.render("index", { books });
+  })
+);
 //GET new book
-app.get("/new_book.html", async (req, res) => {
-  res.redirect("/books/new");
-});
+app.get(
+  "/new_book.html",
+  asyncHandler(async (req, res) => {
+    res.redirect("/books/new");
+  })
+);
 
-app.get("/books/new", async (req, res, next) => {
-  res.render("new_book");
-});
+app.get(
+  "/books/new",
+  asyncHandler(async (req, res, next) => {
+    res.render("new_book");
+  })
+);
 
 //POST new book
-app.post("/books/new", async (req, res, next) => {
-  const title = req.body.title;
-  const author = req.body.author;
-  const genre = req.body.genre;
-  const year = req.body.year;
+app.post(
+  "/books/new",
+  asyncHandler(async (req, res, next) => {
+    const title = req.body.title;
+    const author = req.body.author;
+    const genre = req.body.genre;
+    const year = req.body.year;
 
-  const book = await Book.create({
-    title,
-    author,
-    genre,
-    year,
-  });
-  res.redirect("/books");
-});
+    const book = await Book.create({
+      title,
+      author,
+      genre,
+      year,
+    });
+    res.redirect("/books");
+  })
+);
 //GET a book by ID
-app.get("/books/:id", async (req, res) => {
-  const id = req.params.id;
-  console.dir(id);
-  const book = await Book.findByPk(id);
-  console.dir(book.title);
-  res.render("new_book", { book });
-});
+app.get(
+  "/books/:id",
+  asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    console.dir(book.title);
+    res.render("update-book", { book });
+  })
+);
 //UPDATE BOOK BY ID
+app.post(
+  "/books/:id",
+  asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    console.dir(book.title);
+    await book.update(req.body);
+    res.redirect("/books/new", { book });
+  })
+);
 //DELETE book by ID
+app.get(
+  "/books/:id/delete",
+  asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    res.render("book/delete", { book });
+  })
+);
 
+app.post(
+  "/books/:id/delete",
+  asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    await book.destroy();
+    res.redirect("/books");
+  })
+);
 app.listen(3000, () => console.log("Server running on port 3000!"));
