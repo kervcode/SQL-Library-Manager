@@ -40,7 +40,7 @@ app.get(
   "/books",
   asyncHandler(async (req, res) => {
     const books = await Book.findAll();
-    res.render("index", { books });
+    res.render("index", { books, title: "SQL Library Manager" });
   })
 );
 //GET new book
@@ -54,7 +54,7 @@ app.get(
 app.get(
   "/books/new",
   asyncHandler(async (req, res, next) => {
-    res.render("new_book");
+    res.render("new_book", { title: "Enter New Book" });
   })
 );
 
@@ -73,6 +73,7 @@ app.post(
       genre,
       year,
     });
+
     res.redirect("/books");
   })
 );
@@ -81,8 +82,7 @@ app.get(
   "/books/:id",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    console.dir(book.title);
-    res.render("update-book", { book });
+    res.render("update-book", { book, title: "Edit Book" });
   })
 );
 //UPDATE BOOK BY ID
@@ -90,9 +90,8 @@ app.post(
   "/books/:id",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    console.dir(book.title);
     await book.update(req.body);
-    res.redirect("/books/new", { book });
+    res.redirect("/books/" + book.id);
   })
 );
 //DELETE book by ID
