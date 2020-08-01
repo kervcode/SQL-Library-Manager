@@ -43,6 +43,7 @@ app.get(
     res.render("index", { books, title: "SQL Library Manager" });
   })
 );
+
 //GET new book
 app.get(
   "/new_book.html",
@@ -50,7 +51,7 @@ app.get(
     res.redirect("/books/new");
   })
 );
-
+//render form for new book
 app.get(
   "/books/new",
   asyncHandler(async (req, res, next) => {
@@ -62,21 +63,11 @@ app.get(
 app.post(
   "/books/new",
   asyncHandler(async (req, res, next) => {
-    const title = req.body.title;
-    const author = req.body.author;
-    const genre = req.body.genre;
-    const year = req.body.year;
-
-    const book = await Book.create({
-      title,
-      author,
-      genre,
-      year,
-    });
-
+    const book = await Book.create(req.body);
     res.redirect("/books");
   })
 );
+
 //GET a book by ID
 app.get(
   "/books/:id",
@@ -85,13 +76,14 @@ app.get(
     res.render("update-book", { book, title: "Edit Book" });
   })
 );
+
 //UPDATE BOOK BY ID
 app.post(
   "/books/:id",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
     await book.update(req.body);
-    res.redirect("/books/" + book.id);
+    res.redirect("/books");
   })
 );
 //DELETE book by ID
@@ -99,7 +91,7 @@ app.get(
   "/books/:id/delete",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    res.render("book/delete", { book });
+    res.render("/books", { book });
   })
 );
 
