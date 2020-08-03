@@ -3,10 +3,12 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 
+const routes = require("./routes/books");
+
 //Importing database
-const db = require("./db");
-const books = require("./db/models/books");
-const { Book } = db.models;
+// const db = require("./db");
+// const books = require("./db/models/books");
+// const { Book } = db.models;
 
 const app = express();
 
@@ -18,89 +20,28 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
-function asyncHandler(cb) {
-  return async (req, res, next) => {
-    try {
-      await cb(req, res, next);
-    } catch (error) {
-      res.status(500).send(error);
-    }
-  };
-}
-//Redirect "/" to "/books"
-app.get(
-  "/",
-  asyncHandler(async (req, res) => {
-    res.redirect("/books");
-  })
-);
+app.use("/", routes);
+/* ERROR HANDLERS */
+// 404 handler to catch undefined or non-existent route requests
+app.use((req, res, next) => {
+  console.log("404 error handler called");
+  res.status(404).render("not-found", err);
+});
 
-//GET books listing
-app.get(
-  "/books",
-  asyncHandler(async (req, res) => {
-    const books = await Book.findAll();
-    res.render("index", { books, title: "SQL Library Manager" });
-  })
-);
+// Global Error handler
+app.use((err, req, res, next) => {
+  if (err) {
+    console.log("Global error handler is called");
+  }
 
-//GET new book
-app.get(
-  "/new_book.html",
-  asyncHandler(async (req, res) => {
-    res.redirect("/books/new");
-  })
-);
-//render form for new book
-app.get(
-  "/books/new",
-  asyncHandler(async (req, res, next) => {
-    res.render("new_book", { title: "Enter New Book" });
-  })
-);
-
-//POST new book
-app.post(
-  "/books/new",
-  asyncHandler(async (req, res, next) => {
-    const book = await Book.create(req.body);
-    res.redirect("/books");
-  })
-);
-
-//GET a book by ID
-app.get(
-  "/books/:id",
-  asyncHandler(async (req, res) => {
-    const book = await Book.findByPk(req.params.id);
-    res.render("update-book", { book, title: "Edit Book" });
-  })
-);
-
-//UPDATE BOOK BY ID
-app.post(
-  "/books/:id",
-  asyncHandler(async (req, res) => {
-    const book = await Book.findByPk(req.params.id);
-    await book.update(req.body);
-    res.redirect("/books");
-  })
-);
-//DELETE book by ID
-app.get(
-  "/books/:id/delete",
-  asyncHandler(async (req, res) => {
-    const book = await Book.findByPk(req.params.id);
-    res.render("/books", { book });
-  })
-);
-
-app.post(
-  "/books/:id/delete",
-  asyncHandler(async (req, res) => {
-    const book = await Book.findByPk(req.params.id);
-    await book.destroy();
-    res.redirect("/books");
-  })
-);
+  if (err.status === 404) {
+    res.status(404).render("page-not-found", { err });
+  } else {
+    // console.dir(err);
+    err.message =
+      err.message || `Sorry! It seems like something went wrong on the server.`;
+    res.status(err.status || 500);
+    res.render("error", { err });
+  }
+});
 app.listen(3000, () => console.log("Server running on port 3000!"));
