@@ -21,15 +21,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", routes);
+
 /* ERROR HANDLERS */
 // 404 handler to catch undefined or non-existent route requests
 app.use((req, res, next) => {
-  console.log("404 error handler called");
-  res.status(404).render("not-found", err);
+  const err = new Error("Not Found");
+  next(err);
 });
 
 // Global Error handler
 app.use((err, req, res, next) => {
+  // res.status(err.status || 500);
+
   if (err) {
     console.log("Global error handler is called");
   }

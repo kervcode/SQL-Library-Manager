@@ -20,15 +20,6 @@ router.get(
   })
 );
 
-router.get((req, res, next) => {
-  console.log("Error route has been called");
-
-  const err = new Error();
-  err.message = "Custom 500 error thrown";
-  err.status = 500;
-  throw err;
-});
-
 //GET books listing
 router.get(
   "/books",

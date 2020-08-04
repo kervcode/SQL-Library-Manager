@@ -1,7 +1,7 @@
 extends layout.pug
 
 block content
-  h1 Server Error
+  //- h1= err.status
   h2= `Error status code: ${err.status} - Server Error`
   p= err.message
   p
