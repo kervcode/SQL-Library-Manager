@@ -16,10 +16,10 @@ module.exports = (sequelize) => {
         allowNull: false,
         validate: {
           notNull: {
-            msg: 'Please provide a value for "title"',
+            msg: "Title field is required. Please provide a value for it.",
           },
           notEmpty: {
-            msg: 'Please provide a value for "title"',
+            msg: "Title field cannot be empty. Please provide a value for it.",
           },
         },
       },
@@ -28,10 +28,10 @@ module.exports = (sequelize) => {
         allowNull: false,
         validate: {
           notNull: {
-            msg: 'Please provide a value for "title"',
+            msg: "Author field is required. Please provide a value for it.",
           },
           notEmpty: {
-            msg: 'Please provide a value for "title"',
+            msg: "Author field cannot be empty. Please provide a value for it.",
           },
         },
       },

@@ -3,12 +3,15 @@ const db = require("../db");
 const router = express.Router();
 const { Book } = db.models;
 
+// Async/await middleware
 function asyncHandler(cb) {
   return async (req, res, next) => {
     try {
       await cb(req, res, next);
     } catch (err) {
-      res.status(500).render("error", { err });
+      console.dir("error");
+      console.log("error");
+      res.status(500).send(error);
     }
   };
 }
@@ -48,8 +51,22 @@ router.get(
 router.post(
   "/books/new",
   asyncHandler(async (req, res, next) => {
-    const book = await Book.create(req.body);
-    res.redirect("/books");
+    let book;
+    try {
+      book = await Book.create(req.body);
+      res.redirect("/books");
+    } catch (error) {
+      if (error.name === "SequelizeValidationError") {
+        book = await Book.build(req.body);
+        res.render("new_book", {
+          book,
+          errors: error.errors,
+          title: "Enter New Book",
+        });
+      } else {
+        throw error;
+      }
+    }
   })
 );
 
@@ -58,13 +75,10 @@ router.get(
   "/books/:id",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    if (book !== {}) {
-      res.render("update-book", { book, title: "Edit Book" });
+    if (book) {
+      res.render("update-book", { book, title: "Update Book Detail" });
     } else {
-      const err = new Error();
-      err.status = 404;
-      err.message = "Looks like the quote you resquested does not exist.";
-      next(err);
+      res.sendStatus(404);
     }
   })
 );
@@ -73,15 +87,27 @@ router.get(
 router.post(
   "/books/:id",
   asyncHandler(async (req, res) => {
-    const book = await Book.findByPk(req.params.id);
-    if (book !== {}) {
-      await book.update(req.body);
-      res.redirect("/books");
-    } else {
-      const err = new Error();
-      err.status = 404;
-      err.message = "Looks like the book you resquested does not exist.";
-      next(err);
+    let book;
+    try {
+      book = await Book.findByPk(req.params.id);
+      if (book) {
+        await book.update(req.body);
+        res.redirect("/books");
+      } else {
+        res.redirect(404);
+      }
+    } catch (error) {
+      if (error.name === "SequelizeValidationError") {
+        book = await Book.build(req.body);
+        book.id = req.params.id; // this line is to make sure the right book gets updated
+        res.render("update-book", {
+          book,
+          errors: error.errors,
+          title: "Update book detail",
+        });
+      } else {
+        throw error;
+      }
     }
   })
 );
@@ -90,15 +116,18 @@ router.get(
   "/books/:id/delete",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    if (book !== {}) {
+    if (book) {
       res.render("/books", { book });
     } else {
-      const err = new Error();
-      err.status = 404;
-      err.message =
-        "Looks like the book you are trying to delete does not exist.";
-      next(err);
+      res.sendStatus(404);
     }
+    // else {
+    //   const err = new Error();
+    //   err.status = 404;
+    //   err.message =
+    //     "Looks like the book you are trying to delete does not exist.";
+    //   next(err);
+    // }
   })
 );
 
@@ -106,15 +135,11 @@ router.post(
   "/books/:id/delete",
   asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    if (book !== {}) {
+    if (book) {
       await book.destroy();
       res.redirect("/books");
     } else {
-      const err = new Error();
-      err.status = 404;
-      err.message =
-        "Looks like the book you are trying to delete does not exist.";
-      next(err);
+      res.sendStatus(404);
     }
   })
 );

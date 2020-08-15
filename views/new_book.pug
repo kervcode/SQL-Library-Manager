@@ -2,6 +2,8 @@ extends layout.pug
 
 block content
   h1 New Book
+  
+  include errors
   form(method='post')
     p
       label(for='title') Title
