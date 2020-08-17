@@ -9,9 +9,10 @@ function asyncHandler(cb) {
     try {
       await cb(req, res, next);
     } catch (err) {
-      console.dir("error");
-      console.log("error");
-      res.status(500).send(error);
+      err = new Error();
+      err.status = 500;
+      err.message = `Looks like the book you requested doesn't exist`;
+      next(err);
     }
   };
 }
@@ -64,7 +65,8 @@ router.post(
           title: "Enter New Book",
         });
       } else {
-        throw error;
+        // throw error;
+        next(err);
       }
     }
   })
@@ -73,12 +75,12 @@ router.post(
 //GET a book by ID
 router.get(
   "/books/:id",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req, res, next) => {
     const book = await Book.findByPk(req.params.id);
     if (book) {
       res.render("update-book", { book, title: "Update Book Detail" });
     } else {
-      res.sendStatus(404);
+      next(err);
     }
   })
 );
@@ -93,8 +95,6 @@ router.post(
       if (book) {
         await book.update(req.body);
         res.redirect("/books");
-      } else {
-        res.redirect(404);
       }
     } catch (error) {
       if (error.name === "SequelizeValidationError") {
@@ -106,7 +106,7 @@ router.post(
           title: "Update book detail",
         });
       } else {
-        throw error;
+        next(err);
       }
     }
   })
@@ -119,15 +119,9 @@ router.get(
     if (book) {
       res.render("/books", { book });
     } else {
-      res.sendStatus(404);
+      // res.sendStatus(404);
+      next(err);
     }
-    // else {
-    //   const err = new Error();
-    //   err.status = 404;
-    //   err.message =
-    //     "Looks like the book you are trying to delete does not exist.";
-    //   next(err);
-    // }
   })
 );
 
@@ -139,7 +133,8 @@ router.post(
       await book.destroy();
       res.redirect("/books");
     } else {
-      res.sendStatus(404);
+      // res.sendStatus(404);
+      next(err);
     }
   })
 );
