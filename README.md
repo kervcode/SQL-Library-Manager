@@ -3,10 +3,11 @@
 SQL Library Manager is an application created with the intention of giving a local library a way to manage their collection of books.
 It is a CRUD application. It gives the user/Librerian the abilitity to Create, Read, Update, and Delete books. 
 
-
 To complete this project, I used : 
-
-
+  - Node.js
+  - Express.js
+  - Sequelize
+  - Pug
 
 ### Instruction on testing out this project on your own computer
 
